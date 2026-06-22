@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuestionario — Dueños de Flota</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #f4f6f9;
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: #0047BB;
+    color: white;
+    padding: 28px 24px 24px;
+    text-align: center;
+  }
+
+  .header .logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .header .logo span { font-weight: 300; }
+
+  .header p {
+    font-size: 14px;
+    opacity: 0.85;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .progress-bar-wrap {
+    background: #e2e8f0;
+    height: 4px;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: #0047BB;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+    padding: 8px 0 4px;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px 16px 40px;
+  }
+
+  .question-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .question-card.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-number {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0047BB;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  .q-sub {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    background: white;
+    text-align: left;
+    width: 100%;
+    font-size: 15px;
+    color: #1a1a2e;
+    line-height: 1.4;
+  }
+
+  .option:hover {
+    border-color: #0047BB;
+    background: #f0f5ff;
+  }
+
+  .option.selected {
+    border-color: #0047BB;
+    background: #ebf2ff;
+    color: #0047BB;
+    font-weight: 600;
+  }
+
+  .option .check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    background: white;
+  }
+
+  .option.selected .check {
+    background: #0047BB;
+    border-color: #0047BB;
+  }
+
+  .option.selected .check::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+  }
+
+  .check-multi {
+    border-radius: 4px !important;
+  }
+
+  .option.selected .check-multi::after {
+    content: '✓';
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    border-radius: 0;
+    width: auto;
+    height: auto;
+    background: none;
+  }
+
+  .option-label {
+    flex: 1;
+  }
+
+  .option-label strong {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .option-label small {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 400;
+  }
+
+  .option.selected .option-label small {
+    color: #3b6fd4;
+  }
+
+  textarea {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1a1a2e;
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  textarea:focus { border-color: #0047BB; }
+
+  .nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-next {
+    flex: 1;
+    background: #0047BB;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-next:hover { background: #0038a0; }
+  .btn-next:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+  .btn-back {
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-back:hover { background: #e2e8f0; }
+
+  .optional-tag {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-bottom: 14px;
+  }
+
+  .max-note {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  /* Gracias screen */
+  .thanks-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+  }
+
+  .thanks-screen.active { display: block; }
+
+  .thanks-icon {
+    width: 72px;
+    height: 72px;
+    background: #ebf2ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 32px;
+  }
+
+  .thanks-screen h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 12px;
+  }
+
+  .thanks-screen p {
+    font-size: 16px;
+    color: #64748b;
+    line-height: 1.6;
+    max-width: 380px;
+    margin: 0 auto 32px;
+  }
+
+  .summary-box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .summary-box h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0047BB;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+
+  .summary-item {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+
+  .summary-item:last-child { border-bottom: none; }
+
+  .summary-item .sq { color: #64748b; margin-bottom: 4px; }
+  .summary-item .sa { color: #1a1a2e; font-weight: 600; }
+
+  .btn-copy {
+    margin-top: 20px;
+    background: #0047BB;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  @media (max-width: 480px) {
+    .q-text { font-size: 16px; }
+    .option { font-size: 14px; padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><strong>next</strong> <span>mobility</span></div>
+  <p>Estamos mejorando los servicios para flotas. Contanos cómo gestionás el mantenimiento de tus vehículos. Son 5 minutos y es anónimo.</p>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+<div class="progress-label" id="progressLabel">Pregunta 1 de 13</div>
+
+<div class="container">
+
+  <!-- Q1 -->
+  <div class="question-card active" id="q1">
+    <div class="q-number">Pregunta 1 de 13</div>
+    <div class="q-text">¿Cuántos vehículos tenés en tu flota?</div>
+    <div class="options" data-type="single" data-q="1">
+      <button class="option" data-val="1-5"><span class="check"></span><span class="option-label">1 a 5 vehículos</span></button>
+      <button class="option" data-val="6-10"><span class="check"></span><span class="option-label">6 a 10 vehículos</span></button>
+      <button class="option" data-val="11-20"><span class="check"></span><span class="option-label">11 a 20 vehículos</span></button>
+      <button class="option" data-val="20+"><span class="check"></span><span class="option-label">Más de 20 vehículos</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-next" id="next1" disabled onclick="goNext(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="question-card" id="q2">
+    <div class="q-number">Pregunta 2 de 13</div>
+    <div class="q-text">¿Vos manejás algún vehículo de tu flota en el día a día?</div>
+    <div class="options" data-type="single" data-q="2">
+      <button class="option" data-val="si-regularmente"><span class="check"></span><span class="option-label">Sí, manejo uno o varios regularmente</span></button>
+      <button class="option" data-val="aveces"><span class="check"></span><span class="option-label">A veces, cuando hace falta cubrir algo</span></button>
+      <button class="option" data-val="no-gestiono"><span class="check"></span><span class="option-label">No, solo gestiono — no manejo</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(2)">← Atrás</button>
+      <button class="btn-next" id="next2" disabled onclick="goNext(2)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="question-card" id="q3">
+    <div class="q-number">Pregunta 3 de 13</div>
+    <div class="q-text">¿Qué parte de tu flota está fuera de garantía oficial?</div>
+    <div class="options" data-type="single" data-q="3">
+      <button class="option" data-val="ninguno"><span class="check"></span><span class="option-label">Ninguno, todos en garantía</span></button>
+      <button class="option" data-val="menos-mitad"><span class="check"></span><span class="option-label">Menos de la mitad</span></button>
+      <button class="option" data-val="mas-mitad"><span class="check"></span><span class="option-label">Más de la mitad</span></button>
+      <button class="option" data-val="toda"><span class="check"></span><span class="option-label">Toda la flota está fuera de garantía</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(3)">← Atrás</button>
+      <button class="btn-next" id="next3" disabled onclick="goNext(3)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="question-card" id="q4">
+    <div class="q-number">Pregunta 4 de 13</div>
+    <div class="q-text">Cuando un vehículo sale de garantía, ¿dónde lo llevás a service?</div>
+    <div class="options" data-type="single" data-q="4">
+      <button class="option" data-val="oficial"><span class="check"></span><span class="option-label">Sigo yendo al concesionario oficial</span></button>
+      <button class="option" data-val="taller-fijo"><span class="check"></span><span class="option-label">Taller de confianza fijo (uno o dos)</span></button>
+      <button class="option" data-val="voy-probando"><span class="check"></span><span class="option-label">Voy probando distintos talleres según conveniencia</span></button>
+      <button class="option" data-val="depende"><span class="check"></span><span class="option-label">Depende del tipo de problema</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(4)">← Atrás</button>
+      <button class="btn-next" id="next4" disabled onclick="goNext(4)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="question-card" id="q5">
+    <div class="q-number">Pregunta 5 de 13</div>
+    <div class="q-text">Pensá en la última falla seria de un vehículo fuera de garantía. ¿Qué fue lo que más te preocupó?</div>
+    <div class="q-sub">Elegí la opción que más se acerca.</div>
+    <div class="options" data-type="single" data-q="5">
+      <button class="option" data-val="tiempo-parado"><span class="check"></span><span class="option-label">El tiempo que iba a estar parado</span></button>
+      <button class="option" data-val="costo-arreglo"><span class="check"></span><span class="option-label">El costo del arreglo</span></button>
+      <button class="option" data-val="calidad-trabajo"><span class="check"></span><span class="option-label">No saber si el taller iba a hacer un buen trabajo</span></button>
+      <button class="option" data-val="no-verificar"><span class="check"></span><span class="option-label">No poder verificar qué le hicieron realmente al vehículo</span></button>
+      <button class="option" data-val="cobrar-demas"><span class="check"></span><span class="option-label">Que me cobraran de más o no fueran transparentes</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(5)">← Atrás</button>
+      <button class="btn-next" id="next5" disabled onclick="goNext(5)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="question-card" id="q6">
+    <div class="q-number">Pregunta 6 de 13</div>
+    <div class="q-text">¿Te pasó tener que volver a arreglar lo mismo porque el primer trabajo no quedó bien hecho?</div>
+    <div class="options" data-type="single" data-q="6">
+      <button class="option" data-val="si-varias"><span class="check"></span><span class="option-label">Sí, más de una vez</span></button>
+      <button class="option" data-val="si-una"><span class="check"></span><span class="option-label">Sí, una vez</span></button>
+      <button class="option" data-val="no"><span class="check"></span><span class="option-label">No, nunca me pasó</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(6)">← Atrás</button>
+      <button class="btn-next" id="next6" disabled onclick="goNext(6)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q7 (abierta opcional) -->
+  <div class="question-card" id="q7">
+    <div class="q-number">Pregunta 7 de 13</div>
+    <div class="q-text">¿Qué hiciste después de esa experiencia?</div>
+    <div class="optional-tag">Opcional</div>
+    <textarea id="q7text" placeholder="Contanos brevemente qué pasó y qué decidiste hacer..." rows="3"></textarea>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(7)">← Atrás</button>
+      <button class="btn-next" onclick="goNext(7)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="question-card" id="q8">
+    <div class="q-number">Pregunta 8 de 13</div>
+    <div class="q-text">Cuando un vehículo está en el taller y vos no estás presente, ¿cómo te enterás de qué le hicieron?</div>
+    <div class="options" data-type="single" data-q="8">
+      <button class="option" data-val="taller-avisa"><span class="check"></span><span class="option-label">El taller me manda el detalle por mensaje o llamada</span></button>
+      <button class="option" data-val="chofer-informa"><span class="check"></span><span class="option-label">Le pregunto al chofer cuando lo retira</span></button>
+      <button class="option" data-val="reviso-factura"><span class="check"></span><span class="option-label">Reviso la factura o remito nada más</span></button>
+      <button class="option" data-val="poca-visibilidad"><span class="check"></span><span class="option-label">La verdad, no tengo mucha visibilidad de eso</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(8)">← Atrás</button>
+      <button class="btn-next" id="next8" disabled onclick="goNext(8)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="question-card" id="q9">
+    <div class="q-number">Pregunta 9 de 13</div>
+    <div class="q-text">¿Cuántos días, en promedio, está parado un vehículo después de una falla importante?</div>
+    <div class="options" data-type="single" data-q="9">
+      <button class="option" data-val="menos1"><span class="check"></span><span class="option-label">Menos de 1 día</span></button>
+      <button class="option" data-val="1-3"><span class="check"></span><span class="option-label">1 a 3 días</span></button>
+      <button class="option" data-val="4-7"><span class="check"></span><span class="option-label">4 a 7 días</span></button>
+      <button class="option" data-val="mas1semana"><span class="check"></span><span class="option-label">Más de una semana</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(9)">← Atrás</button>
+      <button class="btn-next" id="next9" disabled onclick="goNext(9)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="question-card" id="q10">
+    <div class="q-number">Pregunta 10 de 13</div>
+    <div class="q-text">Cuando un vehículo está parado, ¿cómo impacta en tu operación?</div>
+    <div class="options" data-type="single" data-q="10">
+      <button class="option" data-val="pierdo-viaje"><span class="check"></span><span class="option-label">Pierdo el viaje o servicio directamente</span></button>
+      <button class="option" data-val="cubro-otro"><span class="check"></span><span class="option-label">Lo cubro con otro vehículo de la flota</span></button>
+      <button class="option" data-val="pierdo-eficiencia"><span class="check"></span><span class="option-label">Reorganizo todo y pierdo eficiencia, pero no facturación</span></button>
+      <button class="option" data-val="depende"><span class="check"></span><span class="option-label">Depende del caso</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(10)">← Atrás</button>
+      <button class="btn-next" id="next10" disabled onclick="goNext(10)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q11 (multiselect, max 3) -->
+  <div class="question-card" id="q11">
+    <div class="q-number">Pregunta 11 de 13</div>
+    <div class="q-text">Si pudieras diseñar el servicio ideal para tu flota, ¿qué tres cosas priorizarías?</div>
+    <div class="max-note">Elegí hasta 3 opciones.</div>
+    <div class="options" data-type="multi" data-q="11" data-max="3">
+      <button class="option" data-val="precio-predecible">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Precio justo y predecible</strong>
+          <small>Saber de antemano cuánto me va a costar, sin sorpresas</small>
+        </span>
+      </button>
+      <button class="option" data-val="garantia-trabajo">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Garantía sobre el trabajo realizado</strong>
+          <small>Si el arreglo no dura, vuelvo y me lo rehacen sin costo</small>
+        </span>
+      </button>
+      <button class="option" data-val="registro-historial">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Registro y reporte de todo lo que le hicieron</strong>
+          <small>Ver el historial completo del vehículo desde el celular</small>
+        </span>
+      </button>
+      <button class="option" data-val="red-nacional">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Red de talleres certificados en todo el país</strong>
+          <small>El mismo estándar sin importar dónde esté el vehículo</small>
+        </span>
+      </button>
+      <button class="option" data-val="repuestos-mismo-lugar">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Repuestos originales y alternativos en el mismo lugar</strong>
+          <small>Sin perder tiempo buscando la pieza por separado</small>
+        </span>
+      </button>
+      <button class="option" data-val="rapidez">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Rapidez real</strong>
+          <small>El vehículo entra y sale en el día, sin excusas</small>
+        </span>
+      </button>
+      <button class="option" data-val="un-solo-proveedor">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Un solo proveedor para todo</strong>
+          <small>Service, repuestos, seguro de flota y compra/venta de usados</small>
+        </span>
+      </button>
+      <button class="option" data-val="respaldo-marca">
+        <span class="check check-multi"></span>
+        <span class="option-label">
+          <strong>Respaldo de marca reconocida</strong>
+          <small>Que detrás del taller haya una empresa con historia y reputación verificable</small>
+        </span>
+      </button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(11)">← Atrás</button>
+      <button class="btn-next" id="next11" disabled onclick="goNext(11)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q12 (abierta) -->
+  <div class="question-card" id="q12">
+    <div class="q-number">Pregunta 12 de 13</div>
+    <div class="q-text">En una palabra o frase corta: ¿qué es lo que más te frustra hoy del mantenimiento de tu flota fuera de garantía?</div>
+    <textarea id="q12text" placeholder="Escribí lo primero que se te venga a la cabeza..." rows="3"></textarea>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(12)">← Atrás</button>
+      <button class="btn-next" id="next12" disabled onclick="goNext(12)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Q13 -->
+  <div class="question-card" id="q13">
+    <div class="q-number">Pregunta 13 de 13</div>
+    <div class="q-text">¿Pagarías un poco más que un taller chico si eso te garantiza una red de talleres certificados con estándares unificados en todo el país?</div>
+    <div class="options" data-type="single" data-q="13">
+      <button class="option" data-val="si-sin-dudar"><span class="check"></span><span class="option-label">Sí, sin dudarlo</span></button>
+      <button class="option" data-val="si-depende-cuanto"><span class="check"></span><span class="option-label">Sí, pero depende de cuánto más</span></button>
+      <button class="option" data-val="no-precio"><span class="check"></span><span class="option-label">No, la prioridad es el precio</span></button>
+      <button class="option" data-val="no-se"><span class="check"></span><span class="option-label">No sé, dependería del caso</span></button>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(13)">← Atrás</button>
+      <button class="btn-next" id="next13" disabled onclick="goNext(13)">Enviar respuestas ✓</button>
+    </div>
+  </div>
+
+  <!-- GRACIAS -->
+  <div class="thanks-screen" id="thanks">
+    <div class="thanks-icon">✓</div>
+    <h2>¡Muchas gracias!</h2>
+    <p>Tus respuestas nos ayudan a entender mejor qué necesitan los dueños de flota. Vamos a usarlas para mejorar la propuesta de NEXT Mobility.</p>
+
+    <div class="summary-box" id="summaryBox">
+      <h3>Tu respuestas</h3>
+      <div id="summaryContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL = 13;
+  const answers = {};
+
+  const qLabels = {
+    1: "Tamaño de flota",
+    2: "Rol en la flota",
+    3: "% fuera de garantía",
+    4: "Dónde lleva a service",
+    5: "Mayor preocupación ante una falla",
+    6: "¿Tuvo que repetir un arreglo?",
+    7: "Qué hizo después (opcional)",
+    8: "Cómo se entera qué le hicieron",
+    9: "Días de vehículo parado",
+    10: "Impacto en operación",
+    11: "Prioridades de servicio ideal",
+    12: "Frustración principal",
+    13: "Disposición a pagar más por calidad"
+  };
+
+  function updateProgress(current) {
+    const pct = ((current - 1) / TOTAL) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `Pregunta ${current} de ${TOTAL}`;
+  }
+
+  function goNext(q) {
+    document.getElementById('q' + q).classList.remove('active');
+    if (q === TOTAL) {
+      showThanks();
+    } else {
+      document.getElementById('q' + (q + 1)).classList.add('active');
+      updateProgress(q + 1);
+    }
+  }
+
+  function goBack(q) {
+    document.getElementById('q' + q).classList.remove('active');
+    document.getElementById('q' + (q - 1)).classList.add('active');
+    updateProgress(q - 1);
+  }
+
+  // Single select
+  document.querySelectorAll('.options[data-type="single"]').forEach(group => {
+    const q = group.dataset.q;
+    group.querySelectorAll('.option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        answers[q] = btn.dataset.val;
+        const nextBtn = document.getElementById('next' + q);
+        if (nextBtn) nextBtn.disabled = false;
+      });
+    });
+  });
+
+  // Multi select (max 3)
+  document.querySelectorAll('.options[data-type="multi"]').forEach(group => {
+    const q = group.dataset.q;
+    const max = parseInt(group.dataset.max || 3);
+    answers[q] = [];
+
+    group.querySelectorAll('.option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          answers[q] = answers[q].filter(v => v !== btn.dataset.val);
+        } else {
+          if (answers[q].length >= max) return;
+          btn.classList.add('selected');
+          answers[q].push(btn.dataset.val);
+        }
+        const nextBtn = document.getElementById('next' + q);
+        if (nextBtn) nextBtn.disabled = answers[q].length === 0;
+      });
+    });
+  });
+
+  // Textarea Q12 habilitación
+  const q12text = document.getElementById('q12text');
+  if (q12text) {
+    q12text.addEventListener('input', () => {
+      answers[12] = q12text.value.trim();
+      const nb = document.getElementById('next12');
+      if (nb) nb.disabled = q12text.value.trim().length < 2;
+    });
+  }
+
+  // Textarea Q7 (opcional — siempre habilitado, guardamos igualmente)
+  const q7text = document.getElementById('q7text');
+  if (q7text) {
+    q7text.addEventListener('input', () => { answers[7] = q7text.value.trim(); });
+  }
+
+  function getLabel(q, val) {
+    if (!val || (Array.isArray(val) && val.length === 0)) return '(sin respuesta)';
+    if (Array.isArray(val)) return val.join(', ');
+    const btn = document.querySelector(`.options[data-q="${q}"] .option[data-val="${val}"] .option-label`);
+    if (btn) {
+      const strong = btn.querySelector('strong');
+      return strong ? strong.textContent : btn.textContent.trim().split('\n')[0].trim();
+    }
+    return val;
+  }
+
+  function showThanks() {
+    document.getElementById('q' + TOTAL).classList.remove('active');
+    document.getElementById('thanks').classList.add('active');
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('progressLabel').textContent = '¡Completado!';
+
+    const container = document.getElementById('summaryContent');
+    container.innerHTML = '';
+    for (let i = 1; i <= TOTAL; i++) {
+      const val = answers[i] || (i === 7 ? '(sin respuesta)' : '');
+      if (i === 7 && !val) continue;
+      const div = document.createElement('div');
+      div.className = 'summary-item';
+      div.innerHTML = `<div class="sq">${qLabels[i]}</div><div class="sa">${getLabel(i, val)}</div>`;
+      container.appendChild(div);
+    }
+  }
+
+  // Init
+  updateProgress(1);
+</script>
+</body>
+</html>
